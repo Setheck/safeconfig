@@ -1,0 +1,10 @@
+{
+  "name"          : "safeconfig",
+  "description"   : "Flat file configuration management with encryption.",
+  "keywords"      : ["file","flat", "hidden", "encryption", "configuration", "config"],
+  "author"        : "Seth Thompson <setheck@gmail.com>",
+  "repository"    : {"type": "git", "url": "TBD"},
+  "main"          : "safeconfig.js",
+  "version"       : "0.0.1",
+  "license"       : "MIT"
+}
