@@ -5,14 +5,31 @@
 //					 and succinct fashion.
 //     Safeconfig may be freely distributed under the MIT license.
 
-var fs = require('fs'),
-	crypto = require('crypto');
+"use strict";
+
+var fs = require('fs')
+,	crypto = require('crypto');
 
 var self = {};
 
+function create(file,password){
+	if (fs.existsSync(file))
+		throw new Error("File Already exists");
+
+	var stub = {};
+		stub.file = file;
+		stub.password = password || '';
+
+	self.config = stub;
+
+	return true;
+}
 
 function open(file , password){
 	//takes in File location of config file, and Password (optional)
+	if (!file)
+		throw new Error("Filename is required");
+
 	if (!fs.existsSync(file) )
 		throw new Error("Config file Does not exist.");
 
@@ -26,15 +43,18 @@ function open(file , password){
 	}
 
 	var configObj 			= JSON.parse(decryptedConfig || configInput);
-		configObj.file 		= file 		|| './conf';
-		configObj.password	= password  || 'DefaultPW' ; //TODO: figure out default password? Sure not super secure, but prevents cleartext being stored.
+		configObj.file 		= file;
+		configObj.password	= password || '';
 
 	self.config = configObj;
+
+	return true;
 }
 
-function close(file){
+function close(file, password){
+	//pasword is optional, but if you want to change the file password you can here
 	
-	var password = self.config.password;
+	password = password || self.config.password || '';
 	var outPutConf = JSON.stringify(self.config)
 
 	var encryptedConfig = '';
@@ -49,9 +69,12 @@ function close(file){
 	var saveLocation = file || self.config.file;
 	fs.writeFileSync(saveLocation , encryptedConfig || outPutConf );
 	self = {};
+
+	return true;
 }
 
-function add(key, val, type){
+//Pass in regex for auto validation.
+function add(key, val, regex){
 	if (!key || !val)
 		throw new Error("Invalid Key:Value Pair");
 
@@ -61,17 +84,31 @@ function add(key, val, type){
 	if (key.charAt(0) === '_')
 		throw new Error("Keys cannot start with _");
 
-	//validate on optional type
-	if ( type && val !== val.match(type))
-		return false; //If no regex match then we failed.
+	//validate on optional regex
+	if ( regex && val !== val.match(regex)[0])
+		return false; 
 
-	self.config['_' + key ] = type;
+	if(regex) self.config['_' + key ] = regex.toString();
 	self.config[key] = val;
 	return true;
 }
 
+function strToRegex(str){
+	var opt = str.match(/(\w+)$/)[0];
+	if (opt)
+		str = str.match(/(\S+)\//)[0];
+
+	return new RegEx(str,opt);
+}
+
 function del(key){
-	delete self.config[key]
+	if (key.charAt(0) === '_')
+		key = key.substring(1);
+
+	delete self.config[key];
+	delete self.config['_'+key];
+
+	return true;
 }
 
 function get(key){
@@ -82,45 +119,69 @@ function output(){
 	return JSON.stringify(self.config,null,'\t');
 }
 
-function getInfo(){
+function getInfo(obj){
+	//This gets info for the current level,
+	//  if you want info of a sub-object, you need to pass that in
+	//  it is too confusing if you have nested object arrays.
+	if (!obj) obj = self.config;
+
 	var info = {
 		keys: [],
-		keyCount: 0,
+		keyCount: 0
 	};
-	for (var i in self.config){
-		info.keys.push(i);
-		info.keyCount += 1;	
+
+	for (var key in obj){
+		if (key.charAt(0) === '_')
+			continue;
+
+		info.keys.push(key);
+		info.keyCount += 1;
+
+		var type = '';
+		if (Array.isArray(obj[key]))
+			type = 'array';
+		else
+			type = typeof(obj[key]);
+		
+		if (info[type])
+			info[type] += 1;
+		else
+			info[type] = 1;
 	}
 
 		return info;
 }
 
-function mapConfigTree(){
-	//TODO
+function mapTree(show){
+	if (show)
+		console.log(display(self.config));
 
+	return display(self.config);
 }
 
 function display(node){
-	res = {};
+	//is this a pipedream?
+	res = '';
 	for (var key in node){
+		res += '+' + key + '\n';
+
 		if (Array.isArray(node[key])){
 			for (var i in node[key]){
-				if (!ary) var ary = [];
-				ary.push(display(node[key][i]));
+				res += '+' + display(node[key][i]) + '\n';
 			}
 			res[key] = ary;
 		}else if (typeof(node[key]) == 'object')
-			res[key] = display(node[key]);
-		else
-			res[key] = node[key];
-
+			res += '+' + display(node[key]) + '\n';
 	}
+	return res;
 }
 
-
+exports.create	= create;
 exports.open 	= open;
+exports.close	= close;
 exports.add  	= add;
 exports.del 	= del;
 exports.get 	= get;
 exports.getInfo = getInfo;
+exports.mapTree = mapTree;
 exports.output 	= output;	
