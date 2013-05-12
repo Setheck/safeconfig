@@ -8,17 +8,14 @@
 var fs 			= require('fs')
 ,	safeconfig 	= require('../safeconfig.js');
 
-var NOFILE 		= './test_config_NOPE.json';
-var FILENAME 	= './test_config.json';
-var CLEARFILE 	= './test_configclear.json';
+var NOFILE 		= './test/test_config_NOPE.json';
+var FILENAME 	= './test/test_config.json';
+var CLEARFILE 	= './test/test_configclear.json';
 var PASSWORD 	= 's3crets';
 
-var KEYS = ['key1','key2','key3','key4',
-			'key5','key6','key7','key8',
-			'key9','key10','key11','key12'];
+var KEY =  'testKey';
 
-var VALUES = ['value1','value2','value3','value4','value5'
-			 ,'value6','value7','value8','value9','value10'];
+var VALUE = 'testValue';
 
 var ARRAY = ['this','is','a','test','array'];
 var OBJECT = {
@@ -27,14 +24,25 @@ var OBJECT = {
 				testing: 'yay'
 			};
 
+var NESTEDOBJ = {
+					aKey: [ 
+						'test1',
+						{ test2: 'something'}
+						],
+				};
+var WORDMATCH = /\w+/;
+
 module.exports = {
+	NOFILE: 	NOFILE,
 	FILENAME: 	FILENAME,
 	PASSWORD: 	PASSWORD,
 	CLEARFILE: 	CLEARFILE,
-	KEYS: 		KEYS,
-	VALUES: 	VALUES,
+	KEY: 		KEY,
+	VALUE: 		VALUE,
 	ARRAY: 		ARRAY,
 	OBJECT: 	OBJECT,
+	NESTEDOBJ: 	NESTEDOBJ,
+	WORDMATCH: 	WORDMATCH,
 
 	safeconfig: safeconfig
 };

@@ -37,9 +37,13 @@ function open(file , password){
 	
 	var decryptedConfig = '';	
 	if (password){
-		var decipher   = crypto.createDecipher('bf',password);
-		decryptedConfig = decipher.update(configInput,'hex','utf8');
-		decryptedConfig += decipher.final('utf8');
+		try{
+			var decipher   = crypto.createDecipher('bf',password);
+			decryptedConfig = decipher.update(configInput,'hex','utf8');
+			decryptedConfig += decipher.final('utf8');
+		}catch (err) {
+			throw err;
+		}
 	}
 
 	var configObj 			= JSON.parse(decryptedConfig || configInput);
@@ -59,10 +63,14 @@ function close(file, password){
 
 	var encryptedConfig = '';
 	if (password){
-		var cipher = crypto.createCipher('bf', password);
+		try{
+			var cipher = crypto.createCipher('bf', password);
+			encryptedConfig =  cipher.update(outPutConf ,'utf8','hex');
+			encryptedConfig += cipher.final('hex');
+		}catch (err) {
+			throw err;
+		} 
 
-		encryptedConfig =  cipher.update(outPutConf ,'utf8','hex');
-		encryptedConfig += cipher.final('hex');
 	}
 
 	//Write the config, clear the object.
@@ -81,16 +89,33 @@ function add(key, val, regex){
 	if (self.config.hasOwnProperty(key))
 		throw new Error("Key already exists");
 
+	return update(key,val,regex);
+}
+
+function update(key, val, regex){
+	if (!key || !val)
+		throw new Error("Invalid Key:Value Pair");
+
 	if (key.charAt(0) === '_')
 		throw new Error("Keys cannot start with _");
 
 	//validate on optional regex
-	if ( regex && val !== val.match(regex)[0])
-		return false; 
+	if (regex){
+		var strVal;
+		if (typeof(val) !== 'string')
+			strVal = val.toString();
+		else
+			strVal = val;
 
-	if(regex) self.config['_' + key ] = regex.toString();
+		if ( strVal !== strVal.match(regex)[0])
+			return false; 
+
+		self.config['_' + key ] = regex.toString();
+	}
+	
 	self.config[key] = val;
 	return true;
+
 }
 
 function strToRegex(str){
@@ -113,6 +138,10 @@ function del(key){
 
 function get(key){
 	return self.config[key] || '';
+}
+
+function getValidation(key){
+	return self.config['_' + key] || '';
 }
 
 function output(){
@@ -161,7 +190,7 @@ function mapTree(show){
 
 function display(node){
 	//is this a pipedream?
-	res = '';
+	var res = '';
 	for (var key in node){
 		res += '+' + key + '\n';
 
@@ -169,19 +198,23 @@ function display(node){
 			for (var i in node[key]){
 				res += '+' + display(node[key][i]) + '\n';
 			}
-			res[key] = ary;
+
 		}else if (typeof(node[key]) == 'object')
 			res += '+' + display(node[key]) + '\n';
 	}
 	return res;
 }
 
-exports.create	= create;
-exports.open 	= open;
-exports.close	= close;
-exports.add  	= add;
-exports.del 	= del;
-exports.get 	= get;
-exports.getInfo = getInfo;
-exports.mapTree = mapTree;
-exports.output 	= output;	
+module.exports = {
+	create			: create,
+	open 			: open,
+	close			: close,
+	add  			: add,
+	del 			: del,
+	get 			: get,
+	getValidation 	: getValidation,
+	update			: update,
+	getInfo 		: getInfo,
+	mapTree 		: mapTree,
+	output 			: output
+}	
