@@ -3,8 +3,8 @@
   "description"   : "Flat file configuration management with encryption.",
   "keywords"      : ["file","flat", "hidden", "encryption", "configuration", "config"],
   "author"        : "Seth Thompson <setheck@gmail.com>",
-  "repository"    : {"type": "git", "url": "TBD"},
+  "repository"    : {"type": "git", "url": "git@github.com:Setheck/safeconfig.git"},
   "main"          : "safeconfig.js",
-  "version"       : "0.0.1",
+  "version"       : "0.0.2",
   "license"       : "MIT"
 }
