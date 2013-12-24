@@ -5,6 +5,6 @@
   "author"        : "Seth Thompson <setheck@gmail.com>",
   "repository"    : {"type": "git", "url": "git@github.com:Setheck/safeconfig.git"},
   "main"          : "safeconfig.js",
-  "version"       : "0.0.2",
+  "version"       : "0.0.3",
   "license"       : "MIT"
 }

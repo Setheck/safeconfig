@@ -1,4 +1,4 @@
-//     safeconfig.js v 0.0.1
+//     safeconfig.js v 0.0.3
 //     @uthor: Seth Thompson
 //     description: This is just a quick library I wrote to store
 //					 and manage a configuration file in a more secure
@@ -33,9 +33,9 @@ function open(file , password){
 	if (!fs.existsSync(file) )
 		throw new Error("Config file Does not exist.");
 
-	var configInput = fs.readFileSync(file);
-	
-	var decryptedConfig = '';	
+	var configInput = fs.readFileSync(file,'utf8');
+
+	var decryptedConfig = '';
 	if (password){
 		try{
 			var decipher   = crypto.createDecipher('bf',password);
@@ -188,22 +188,6 @@ function mapTree(show){
 	return display(self.config);
 }
 
-function display(node){
-	//is this a pipedream?
-	var res = '';
-	for (var key in node){
-		res += '+' + key + '\n';
-
-		if (Array.isArray(node[key])){
-			for (var i in node[key]){
-				res += '+' + display(node[key][i]) + '\n';
-			}
-
-		}else if (typeof(node[key]) == 'object')
-			res += '+' + display(node[key]) + '\n';
-	}
-	return res;
-}
 
 module.exports = {
 	create			: create,
